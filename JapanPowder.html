@@ -19,11 +19,17 @@
   html,body{margin:0;padding:0}
   body{font-family:"Hiragino Sans","Noto Sans TC","Noto Sans JP",system-ui,-apple-system,"Segoe UI",sans-serif;
     background:var(--bg);color:var(--ink);font-size:14px;line-height:1.55}
-  header{background:linear-gradient(120deg,#1c3d5f,#2f6db3);color:#fff;padding:14px 20px}
+  header{background:linear-gradient(120deg,#1c3d5f,#2f6db3);color:#fff;padding:14px 20px;position:relative}
   header h1{margin:0;font-size:20px;font-weight:800;letter-spacing:.5px}
   header .sub{font-size:12px;opacity:.9;margin-top:3px}
   header .meta{font-size:11px;opacity:.75;margin-top:2px}
-  .wrap{display:flex;gap:0;height:calc(100vh - 72px);min-height:520px}
+  /* 語言切換 */
+  .langsw{position:absolute;top:12px;right:16px;display:flex;gap:0;border:1px solid rgba(255,255,255,.45);border-radius:8px;overflow:hidden}
+  .langsw button{border:none;background:transparent;color:#fff;font-size:12px;font-weight:700;padding:5px 10px;cursor:pointer;opacity:.75}
+  .langsw button+button{border-left:1px solid rgba(255,255,255,.35)}
+  .langsw button.on{background:rgba(255,255,255,.92);color:#1c3d5f;opacity:1}
+  @media(max-width:860px){.langsw{position:static;margin-top:6px;display:inline-flex}}
+  .wrap{display:flex;gap:0;height:calc(100vh - 72px);min-height:520px;position:relative}
   @media(max-width:860px){.wrap{flex-direction:column;height:auto}}
   /* 側欄 */
   .side{width:390px;min-width:340px;background:var(--panel);border-right:1px solid var(--line);
@@ -124,9 +130,12 @@
 </head>
 <body>
 <header>
-  <h1>⛷️ 日本雪場地圖</h1>
-  <div class="sub">全國 500 座滑雪場 · 雪道難易度（<span style="color:#8fd19e">綠</span>/<span style="color:#f2a3a3">紅</span>/黑）· 票價 · 規格 · 營業資訊</div>
+  <h1 id="htitle">⛷️ 日本雪場地圖</h1>
+  <div class="sub" id="hsub">全國 500 座滑雪場 · 雪道難易度（<span style="color:#8fd19e">綠</span>/<span style="color:#f2a3a3">紅</span>/黑）· 票價 · 規格 · 營業資訊</div>
   <div class="meta" id="hmeta">載入中…</div>
+  <div class="langsw" id="langSw">
+    <button data-lang="zh" class="on">中文</button><button data-lang="en">EN</button><button data-lang="ja">日本語</button>
+  </div>
 </header>
 
 <div class="wrap">
@@ -159,7 +168,7 @@
       <button id="btnCmp">⚖️ 比較 (<span id="cmpN">0</span>)</button>
       <button id="btnWish">⭐ 願望 (<span id="wishN">0</span>)</button>
     </div>
-    <div class="foot">
+    <div class="foot" id="hfoot">
       資料：OpenSkiMap（OSM＋Skimap.org）· 票價：タビリス 2026調査<br>
       票價為 2025-26 参考值，實際以各雪場官網為準。
     </div>
@@ -172,7 +181,7 @@
       <button id="fabRuns">🗺️ 有雪道圖</button>
       <button id="fabPrice">💴 票價</button>
     </div>
-    <div class="legend">
+    <div class="legend" id="legendBox">
       <b>雪道難度</b>
       <div class="lg"><span class="sw" style="background:var(--green)"></span>初級（綠）</div>
       <div class="lg"><span class="sw" style="background:var(--red)"></span>中級（紅）</div>
@@ -188,14 +197,14 @@
 <!-- 比較 Modal -->
 <div class="modal" id="cmpModal"><div class="box">
   <button class="x" data-close>×</button>
-  <h2>⚖️ 雪場比較</h2>
+  <h2 id="cmpTitle">⚖️ 雪場比較</h2>
   <div id="cmpBody"></div>
 </div></div>
 
 <!-- 願望清單 Modal -->
 <div class="modal" id="wishModal"><div class="box">
   <button class="x" data-close>×</button>
-  <h2>⭐ 我的願望清單</h2>
+  <h2 id="wishTitle">⭐ 我的願望清單</h2>
   <div id="wishBody"></div>
 </div></div>
 
@@ -214,15 +223,156 @@ window.JAPANPOWDER_RUNS = {"602de2e9accfe8a23d9239048fbc1bf4e0c293fc":[{"d":"gre
 /* ---- 資料已內嵌（單一自足部署版）；boot() 於腳本結尾呼叫，確保 var 賦值都完成 ---- */
 window.__ldRuns=function(cb){cb();};
 
+/* ================= 多語系（中／英／日） ================= */
+var I18N={
+zh:{
+  htmlLang:'zh-Hant',
+  title:'日本雪場地圖 — 全國滑雪場難易度・票價・營業資訊',
+  h1:'⛷️ 日本雪場地圖',
+  sub:'全國 500 座滑雪場 · 雪道難易度（<span style="color:#8fd19e">綠</span>/<span style="color:#f2a3a3">紅</span>/黑）· 票價 · 規格 · 營業資訊',
+  meta:'資料更新：{d}　雪場 {n} 座　有雪道圖 {r} 座　含票價 {p} 座',
+  searchPh:'搜尋雪場名稱（中／日／英）…',
+  sortRunKm:'滑走距離▼',sortVert:'落差▼',sortLifts:'纜車數▼',sortPriceAsc:'票價低▲',sortPriceDesc:'票價高▼',sortName:'名稱',
+  modeList:'🗺️ 雪場清單',modeRank:'🏆 排行榜',
+  btnCmp:'⚖️ 比較',btnWish:'⭐ 願望',
+  foot:'資料：OpenSkiMap（OSM＋Skimap.org）· 票價：タビリス 2026調査<br>票價為 2025-26 参考值，實際以各雪場官網為準。',
+  fabNight:'🌙 夜滑',fabRuns:'🗺️ 有雪道圖',fabPrice:'💴 票價',
+  legendTitle:'雪道難度',legGreen:'初級（綠）',legRed:'中級（紅）',legBlack:'上級（黑）',legOrange:'非壓雪',
+  cmpTitle:'⚖️ 雪場比較',wishTitle:'⭐ 我的願望清單',
+  countShow:'顯示 {n} 座',emptyList:'沒有符合條件的雪場',over400:'（僅顯示前 400 筆，請用篩選縮小範圍）',
+  specVert:'落差',specRun:'滑走',specLifts:'纜車',specTrails:'雪道',badgeNight:'夜滑',oneDay:'1日券',
+  kvTop:'山頂標高',kvBase:'山麓標高',kvVert:'標高落差',kvRun:'總滑走距離',kvLifts:'纜車數',kvTrails:'雪道總數',
+  liftsUnit:' 基',trailsUnit:' 條',
+  secDiff:'雪道難度分布',diffGreen:'初級',diffRed:'中級',diffBlack:'上級',diffOther:'非壓雪／其他',
+  secPrice:'票價・營業',adult1day:'/ 大人1日券',approxTwd:'約 NT$',lastSeason:'去季',
+  srcLine:'來源：{s}（查核 {d}）· 以官網為準',
+  noPrice:'此雪場尚無彙整票價，請點下方官網查詢。',
+  secWx:'即時天氣（Open-Meteo）',wxLoading:'查詢中…',wxTemp:'山麓氣溫',wxSnowNow:'❄️ 現時降雪 {v} cm',
+  wxSnow3d:'未來3日累計降雪約 {v} cm',wxNote:'※ 座標點天氣，僅供參考',wxFail:'（天氣查詢失敗，需連網）',
+  btnRuns:'🗺️ 顯示雪道線',btnWeb:'🔗 官方網站',btnNav:'📍 導航',
+  wishAdd:'☆ 加入願望',wishIn:'★ 已在願望',cmpAdd:'＋ 加入比較',cmpIn:'✓ 已在比較',
+  wishEmpty:'尚未加入任何雪場。<br>點雪場詳情的「☆ 加入願望」即可收藏。',
+  cmpEmpty:'尚未選擇比較對象。<br>點雪場詳情的「＋ 加入比較」（最多 4 座）。',
+  cmpMax:'最多比較 4 座雪場',remove:'移除',
+  thResort:'雪場',thVert:'落差',thRun:'滑走',thPrice:'1日券',thItem:'項目',
+  rowRegion:'地區',rowNight:'夜滑',rowTwd:'≈台幣',rowHours:'營業時間',rowSeason:'雪季',
+  rankRun:'最長滑走距離',rankVert:'最大標高落差',rankLifts:'最多纜車',rankPHigh:'票價最高',rankPLow:'票價最低(CP)',
+  rankTitle:'全國排行 · ',
+  unnamed:'(未命名雪場)',all:'全部',
+  regions:{}
+},
+en:{
+  htmlLang:'en',
+  title:'Japan Ski Resort Map — Slope Difficulty, Ticket Prices & Season Info',
+  h1:'⛷️ Japan Ski Resort Map',
+  sub:'500 ski areas nationwide · slope difficulty (<span style="color:#8fd19e">green</span>/<span style="color:#f2a3a3">red</span>/black) · ticket prices · stats · season info',
+  meta:'Updated {d} · {n} resorts · {r} with trail maps · {p} with prices',
+  searchPh:'Search resorts (CH / JP / EN)…',
+  sortRunKm:'Ski distance▼',sortVert:'Vertical▼',sortLifts:'Lifts▼',sortPriceAsc:'Price low▲',sortPriceDesc:'Price high▼',sortName:'Name',
+  modeList:'🗺️ Resort list',modeRank:'🏆 Rankings',
+  btnCmp:'⚖️ Compare',btnWish:'⭐ Wishlist',
+  foot:'Data: OpenSkiMap (OSM + Skimap.org) · Prices: Tabiris 2026 survey<br>Prices are 2025-26 season reference values — always check official sites.',
+  fabNight:'🌙 Night ski',fabRuns:'🗺️ Trail map',fabPrice:'💴 Priced',
+  legendTitle:'Slope difficulty',legGreen:'Beginner (green)',legRed:'Intermediate (red)',legBlack:'Advanced (black)',legOrange:'Ungroomed',
+  cmpTitle:'⚖️ Compare Resorts',wishTitle:'⭐ My Wishlist',
+  countShow:'Showing {n}',emptyList:'No resorts match the filters',over400:'(Showing first 400 — narrow down with filters)',
+  specVert:'Vert',specRun:'Ski',specLifts:'Lifts',specTrails:'Trails',badgeNight:'Night',oneDay:'1-day pass',
+  kvTop:'Summit elevation',kvBase:'Base elevation',kvVert:'Vertical drop',kvRun:'Total ski distance',kvLifts:'Lifts',kvTrails:'Total trails',
+  liftsUnit:'',trailsUnit:'',
+  secDiff:'Difficulty breakdown',diffGreen:'Beginner',diffRed:'Intermediate',diffBlack:'Advanced',diffOther:'Ungroomed / other',
+  secPrice:'Tickets & Season',adult1day:'/ adult 1-day pass',approxTwd:'≈ NT$',lastSeason:'last season',
+  srcLine:'Source: {s} (checked {d}) · confirm on official site',
+  noPrice:'No compiled price data for this resort — see the official website below.',
+  secWx:'Live weather (Open-Meteo)',wxLoading:'Loading…',wxTemp:'base temperature',wxSnowNow:'❄️ snowfall now {v} cm',
+  wxSnow3d:'Next 3 days snowfall ≈ {v} cm',wxNote:'※ Point forecast, for reference only',wxFail:'(Weather fetch failed — internet required)',
+  btnRuns:'🗺️ Show trails',btnWeb:'🔗 Official site',btnNav:'📍 Directions',
+  wishAdd:'☆ Add to wishlist',wishIn:'★ In wishlist',cmpAdd:'＋ Add to compare',cmpIn:'✓ In compare',
+  wishEmpty:'Nothing saved yet.<br>Tap “☆ Add to wishlist” in a resort detail panel.',
+  cmpEmpty:'No resorts selected.<br>Tap “＋ Add to compare” in a resort detail panel (up to 4).',
+  cmpMax:'Compare up to 4 resorts',remove:'Remove',
+  thResort:'Resort',thVert:'Vert',thRun:'Ski km',thPrice:'1-day',thItem:'Item',
+  rowRegion:'Region',rowNight:'Night skiing',rowTwd:'≈ TWD',rowHours:'Hours',rowSeason:'Season',
+  rankRun:'Longest ski distance',rankVert:'Biggest vertical',rankLifts:'Most lifts',rankPHigh:'Highest price',rankPLow:'Cheapest (value)',
+  rankTitle:'National ranking · ',
+  unnamed:'(Unnamed ski area)',all:'All',
+  regions:{'北海道':'Hokkaido','東北':'Tohoku','關東':'Kanto','甲信越':'Koshinetsu','中部北陸':'Chubu-Hokuriku','近畿':'Kinki','中國四國':'Chugoku-Shikoku','九州':'Kyushu','其他':'Other'}
+},
+ja:{
+  htmlLang:'ja',
+  title:'日本スキー場マップ — 全国ゲレンデ難易度・リフト券・営業情報',
+  h1:'⛷️ 日本スキー場マップ',
+  sub:'全国500スキー場 · コース難易度（<span style="color:#8fd19e">緑</span>/<span style="color:#f2a3a3">赤</span>/黒）· リフト券価格 · スペック · 営業情報',
+  meta:'データ更新：{d}　スキー場 {n}　コース図あり {r}　料金あり {p}',
+  searchPh:'スキー場名で検索（中／日／英）…',
+  sortRunKm:'滑走距離▼',sortVert:'標高差▼',sortLifts:'リフト数▼',sortPriceAsc:'価格安い▲',sortPriceDesc:'価格高い▼',sortName:'名前',
+  modeList:'🗺️ スキー場一覧',modeRank:'🏆 ランキング',
+  btnCmp:'⚖️ 比較',btnWish:'⭐ 行きたい',
+  foot:'データ：OpenSkiMap（OSM＋Skimap.org）・料金：タビリス2026調査<br>料金は2025-26シーズン参考値。最新情報は各スキー場公式サイトで。',
+  fabNight:'🌙 ナイター',fabRuns:'🗺️ コース図あり',fabPrice:'💴 料金あり',
+  legendTitle:'コース難易度',legGreen:'初級（緑）',legRed:'中級（赤）',legBlack:'上級（黒）',legOrange:'非圧雪',
+  cmpTitle:'⚖️ スキー場比較',wishTitle:'⭐ 行きたいリスト',
+  countShow:'{n} 件表示',emptyList:'条件に合うスキー場がありません',over400:'（先頭400件のみ表示。絞り込んでください）',
+  specVert:'標高差',specRun:'滑走',specLifts:'リフト',specTrails:'コース',badgeNight:'ナイター',oneDay:'1日券',
+  kvTop:'山頂標高',kvBase:'山麓標高',kvVert:'標高差',kvRun:'総滑走距離',kvLifts:'リフト数',kvTrails:'コース総数',
+  liftsUnit:' 基',trailsUnit:' 本',
+  secDiff:'コース難易度分布',diffGreen:'初級',diffRed:'中級',diffBlack:'上級',diffOther:'非圧雪／その他',
+  secPrice:'リフト券・営業',adult1day:'/ 大人1日券',approxTwd:'約 NT$',lastSeason:'前季',
+  srcLine:'出典：{s}（確認 {d}）・公式サイト優先',
+  noPrice:'この雪場の料金は未集計です。下の公式サイトでご確認ください。',
+  secWx:'現在の天気（Open-Meteo）',wxLoading:'取得中…',wxTemp:'山麓気温',wxSnowNow:'❄️ 現在の降雪 {v} cm',
+  wxSnow3d:'今後3日間の累積降雪 約 {v} cm',wxNote:'※ 座標地点の天気・参考値',wxFail:'（天気取得失敗・要ネット接続）',
+  btnRuns:'🗺️ コースを表示',btnWeb:'🔗 公式サイト',btnNav:'📍 ナビ',
+  wishAdd:'☆ 行きたい',wishIn:'★ 追加済み',cmpAdd:'＋ 比較に追加',cmpIn:'✓ 比較に追加済み',
+  wishEmpty:'まだ登録がありません。<br>詳細画面の「☆ 行きたい」で追加できます。',
+  cmpEmpty:'比較対象がありません。<br>詳細画面の「＋ 比較に追加」で選択（最大4件）。',
+  cmpMax:'比較は最大4件まで',remove:'削除',
+  thResort:'スキー場',thVert:'標高差',thRun:'滑走',thPrice:'1日券',thItem:'項目',
+  rowRegion:'地域',rowNight:'ナイター',rowTwd:'≈台湾ドル',rowHours:'営業時間',rowSeason:'シーズン',
+  rankRun:'最長滑走距離',rankVert:'最大標高差',rankLifts:'リフト最多',rankPHigh:'価格最高',rankPLow:'価格最安(コスパ)',
+  rankTitle:'全国ランキング · ',
+  unnamed:'（名称不明）',all:'すべて',
+  regions:{'關東':'関東','中部北陸':'中部・北陸','中國四國':'中国・四国','其他':'その他'}
+}
+};
+/* 縣名對照：資料內為繁中正字，日文僅三字不同、英文全表 */
+var PREF_JA={'廣島':'広島','德島':'徳島','靜岡':'静岡'};
+var PREF_EN={'北海道':'Hokkaido','青森':'Aomori','岩手':'Iwate','宮城':'Miyagi','秋田':'Akita','山形':'Yamagata','福島':'Fukushima',
+  '栃木':'Tochigi','群馬':'Gunma','埼玉':'Saitama','神奈川':'Kanagawa','新潟':'Niigata','富山':'Toyama','石川':'Ishikawa',
+  '福井':'Fukui','山梨':'Yamanashi','長野':'Nagano','岐阜':'Gifu','靜岡':'Shizuoka','愛知':'Aichi','三重':'Mie','滋賀':'Shiga',
+  '奈良':'Nara','兵庫':'Hyogo','鳥取':'Tottori','島根':'Shimane','岡山':'Okayama','廣島':'Hiroshima','山口':'Yamaguchi',
+  '德島':'Tokushima','愛媛':'Ehime','高知':'Kochi','佐賀':'Saga','熊本':'Kumamoto','大分':'Oita'};
+
+function t(k){var d=I18N[state.lang]||I18N.zh;return (k in d)?d[k]:I18N.zh[k];}
+function fmt(s,o){return s.replace(/\{(\w+)\}/g,function(_,k){return o[k];});}
+function regionName(r){if(r==='全部')return t('all');var m=t('regions');return (m&&m[r])||r;}
+function prefName(p){
+  if(state.lang==='en')return PREF_EN[p]||p;
+  if(state.lang==='ja')return PREF_JA[p]||p;
+  return p;
+}
+
 var GEO,INFO,AREAS,BYID={},map,markerLayer,runLayer,curRunAreaId=null;
 var REGION_COLORS={'北海道':'--r-hok','東北':'--r-toh','關東':'--r-kan','甲信越':'--r-kos',
   '中部北陸':'--r-chu','近畿':'--r-kin','中國四國':'--r-csk','九州':'--r-kyu','其他':'--r-oth'};
 var DIFF_COLORS={green:'#2e7d32',red:'#c62828',black:'#212121',orange:'#e08a00',grey:'#9e9e9e'};
-var state={region:'全部',q:'',night:false,price:false,runs:false,sort:'runKm',rate:0.21,mode:'list'};
+var state={region:'全部',q:'',night:false,price:false,runs:false,sort:'runKm',rate:0.21,mode:'list',
+  lang:localStorage.getItem('japanpowder_lang')||'zh'};
+if(!I18N[state.lang])state.lang='zh';
 var cmp=[], wish=[];
 
 function rc(region){return getComputedStyle(document.documentElement).getPropertyValue(REGION_COLORS[region]||'--r-oth').trim();}
-function jname(a){return a.name.split(',')[0].trim();}
+/* 依語言取雪場顯示名：日/中用日文正名；英文取名稱串中的拉丁字母變體，無則回退日文名 */
+function jname(a){
+  if(a.name==='(未命名雪場)')return t('unnamed');
+  var parts=a.name.split(',');
+  if(state.lang==='en'){
+    for(var i=0;i<parts.length;i++){
+      var p=parts[i].trim();
+      if(/^[\x20-\x7E’–ŌōŪūĀāĪīĒē]+$/.test(p))return p;
+    }
+  }
+  return parts[0].trim();
+}
 function info(a){return INFO.resorts[a.id]||null;}
 // 難度三分類聚合
 function tiers(a){
@@ -238,10 +388,45 @@ function boot(){
   GEO=window.JAPANPOWDER_GEO; INFO=window.JAPANPOWDER_INFO; AREAS=GEO.areas;
   AREAS.forEach(function(a){BYID[a.id]=a;});
   wish=JSON.parse(localStorage.getItem('japanpowder_wishlist')||'[]');
-  var pricedN=AREAS.filter(function(a){return info(a);}).length;
-  document.getElementById('hmeta').textContent=
-    '資料更新：'+GEO.generated+'　雪場 '+GEO.count+' 座　有雪道圖 '+AREAS.filter(function(a){return a.hasRuns;}).length+' 座　含票價 '+pricedN+' 座';
-  buildChips(); initMap(); bindUI(); render(); updWishN();
+  initMap(); bindUI(); applyLang(); updWishN();
+}
+
+/* 套用語言：靜態文字＋動態區塊全數重繪 */
+function applyLang(){
+  var lang=state.lang;
+  document.documentElement.lang=t('htmlLang');
+  document.title=t('title');
+  document.getElementById('htitle').textContent=t('h1');
+  document.getElementById('hsub').innerHTML=t('sub');
+  document.getElementById('q').placeholder=t('searchPh');
+  var sortKeys={runKm:'sortRunKm',vert:'sortVert',lifts:'sortLifts',priceAsc:'sortPriceAsc',priceDesc:'sortPriceDesc',name:'sortName'};
+  [].forEach.call(document.getElementById('sort').options,function(o){o.textContent=t(sortKeys[o.value]);});
+  var modeKeys={list:'modeList',rank:'modeRank'};
+  [].forEach.call(document.querySelectorAll('.modeswitch button'),function(b){b.textContent=t(modeKeys[b.dataset.mode]);});
+  document.getElementById('btnCmp').innerHTML=t('btnCmp')+' (<span id="cmpN">'+cmp.length+'</span>)';
+  document.getElementById('btnWish').innerHTML=t('btnWish')+' (<span id="wishN">'+wish.length+'</span>)';
+  document.getElementById('hfoot').innerHTML=t('foot');
+  document.getElementById('fabNight').textContent=t('fabNight');
+  document.getElementById('fabRuns').textContent=t('fabRuns');
+  document.getElementById('fabPrice').textContent=t('fabPrice');
+  document.getElementById('legendBox').innerHTML=
+    '<b>'+t('legendTitle')+'</b>'+
+    '<div class="lg"><span class="sw" style="background:var(--green)"></span>'+t('legGreen')+'</div>'+
+    '<div class="lg"><span class="sw" style="background:var(--red)"></span>'+t('legRed')+'</div>'+
+    '<div class="lg"><span class="sw" style="background:var(--black)"></span>'+t('legBlack')+'</div>'+
+    '<div class="lg"><span class="sw" style="background:var(--orange)"></span>'+t('legOrange')+'</div>';
+  document.getElementById('cmpTitle').textContent=t('cmpTitle');
+  document.getElementById('wishTitle').textContent=t('wishTitle');
+  [].forEach.call(document.querySelectorAll('#langSw button'),function(b){b.classList.toggle('on',b.dataset.lang===lang);});
+  if(GEO){
+    var pricedN=AREAS.filter(function(a){return info(a);}).length;
+    document.getElementById('hmeta').textContent=fmt(t('meta'),
+      {d:GEO.generated,n:GEO.count,r:AREAS.filter(function(a){return a.hasRuns;}).length,p:pricedN});
+    buildChips(); render();
+    if(curDetail)openDetail(curDetail);
+    if(document.getElementById('cmpModal').classList.contains('open'))openCmp();
+    if(document.getElementById('wishModal').classList.contains('open'))openWish();
+  }
 }
 
 function buildChips(){
@@ -251,7 +436,8 @@ function buildChips(){
   regs.forEach(function(r){
     var c=document.createElement('span');c.className='chip'+(r===state.region?' on':'');
     var n=r==='全部'?AREAS.length:AREAS.filter(function(a){return a.region===r;}).length;
-    c.textContent=r+' '+n;
+    c.textContent=regionName(r)+' '+n;
+    c.title=regionName(r);
     if(r!=='全部'){c.style.borderLeft='4px solid '+rc(r);}
     c.onclick=function(){state.region=r;[].forEach.call(el.children,function(x){x.classList.remove('on');});c.classList.add('on');render();fitRegion(r);};
     el.appendChild(c);
@@ -270,6 +456,13 @@ function bindUI(){
   document.getElementById('q').oninput=function(e){state.q=e.target.value.trim().toLowerCase();render();};
   document.getElementById('sort').onchange=function(e){state.sort=e.target.value;render();};
   document.getElementById('rate').onchange=function(e){state.rate=parseFloat(e.target.value)||0;render();if(curDetail)openDetail(curDetail);};
+  // 語言切換：中／英／日
+  [].forEach.call(document.querySelectorAll('#langSw button'),function(b){b.onclick=function(){
+    if(state.lang===b.dataset.lang)return;
+    state.lang=b.dataset.lang;
+    localStorage.setItem('japanpowder_lang',state.lang);
+    applyLang();
+  };});
   // 地圖右上：篩選切換鈕（夜滑／有雪道圖／票價）
   function fab(id,key){var el=document.getElementById(id);el.onclick=function(){state[key]=!state[key];el.classList.toggle('on',state[key]);render();};}
   fab('fabNight','night'); fab('fabRuns','runs'); fab('fabPrice','price');
@@ -299,7 +492,7 @@ function filtered(){
 function sortAreas(arr){
   var s=state.sort;
   return arr.slice().sort(function(a,b){
-    if(s==='name')return jname(a).localeCompare(jname(b),'ja');
+    if(s==='name')return jname(a).localeCompare(jname(b),state.lang==='en'?'en':'ja');
     if(s==='priceAsc'||s==='priceDesc'){
       var pa=(info(a)||{}).price_1day_adult, pb=(info(b)||{}).price_1day_adult;
       if(pa==null&&pb==null)return (b.runKm||0)-(a.runKm||0);
@@ -317,10 +510,10 @@ function render(){
     renderRank(list);
   }else{
     list.innerHTML='';
-    document.getElementById('count').textContent='顯示 '+arr.length+' 座';
-    if(!arr.length){list.innerHTML='<div class="empty">沒有符合條件的雪場</div>';}
+    document.getElementById('count').textContent=fmt(t('countShow'),{n:arr.length});
+    if(!arr.length){list.innerHTML='<div class="empty">'+t('emptyList')+'</div>';}
     arr.slice(0,400).forEach(function(a){list.appendChild(cardEl(a));});
-    if(arr.length>400){var m=document.createElement('div');m.className='count';m.style.textAlign='center';m.textContent='（僅顯示前 400 筆，請用篩選縮小範圍）';list.appendChild(m);}
+    if(arr.length>400){var m=document.createElement('div');m.className='count';m.style.textAlign='center';m.textContent=t('over400');list.appendChild(m);}
   }
   // 地圖標記（依篩選）
   markerLayer.clearLayers();
@@ -335,18 +528,18 @@ function render(){
 
 function cardEl(a){
   var d=document.createElement('div');d.className='card';d.dataset.id=a.id;
-  var t=tiers(a); var inf=info(a);
-  var seg=function(v,c){return v?'<i style="width:'+(v/t.total*100)+'%;background:'+DIFF_COLORS[c]+'"></i>':'';};
+  var t2=tiers(a); var inf=info(a);
+  var seg=function(v,c){return v?'<i style="width:'+(v/t2.total*100)+'%;background:'+DIFF_COLORS[c]+'"></i>':'';};
   d.innerHTML=
-    '<div class="nm">'+jname(a)+' <span class="rg" style="background:'+rc(a.region)+'">'+a.region+'</span>'+
-      (a.night?' <span class="badge">夜滑</span>':'')+'</div>'+
+    '<div class="nm">'+jname(a)+' <span class="rg" style="background:'+rc(a.region)+'">'+regionName(a.region)+'</span>'+
+      (a.night?' <span class="badge">'+t('badgeNight')+'</span>':'')+'</div>'+
     '<div class="specs">'+
-      (a.vert!=null?'落差 '+a.vert+'m':'')+
-      (a.runKm!=null?'　滑走 '+a.runKm+'km':'')+
-      (a.lifts?'　纜車 '+a.lifts:'')+
-      (t.total?'　雪道 '+t.total:'')+'</div>'+
-    (t.total?'<div class="diffbar">'+seg(t.green,'green')+seg(t.red,'red')+seg(t.black,'black')+seg(t.other,'orange')+'</div>':'')+
-    (inf?'<div class="price">¥'+inf.price_1day_adult.toLocaleString()+'<small>1日券</small></div>':'');
+      (a.vert!=null?t('specVert')+' '+a.vert+'m':'')+
+      (a.runKm!=null?'　'+t('specRun')+' '+a.runKm+'km':'')+
+      (a.lifts?'　'+t('specLifts')+' '+a.lifts:'')+
+      (t2.total?'　'+t('specTrails')+' '+t2.total:'')+'</div>'+
+    (t2.total?'<div class="diffbar">'+seg(t2.green,'green')+seg(t2.red,'red')+seg(t2.black,'black')+seg(t2.other,'orange')+'</div>':'')+
+    (inf?'<div class="price">¥'+inf.price_1day_adult.toLocaleString()+'<small>'+t('oneDay')+'</small></div>':'');
   d.onclick=function(){openDetail(a);};
   return d;
 }
@@ -356,48 +549,48 @@ function openDetail(a){
   curDetail=a;
   [].forEach.call(document.querySelectorAll('.card'),function(c){c.classList.toggle('sel',c.dataset.id===a.id);});
   map.panTo([a.lat,a.lng]);
-  var t=tiers(a),inf=info(a);
-  var seg=function(v,c,lbl){return v?'<div class="lg"><span class="sw" style="background:'+DIFF_COLORS[c]+'"></span>'+lbl+' '+v+' 條</div>':'';};
+  var t2=tiers(a),inf=info(a);
+  var seg=function(v,c,lbl){return v?'<div class="lg"><span class="sw" style="background:'+DIFF_COLORS[c]+'"></span>'+lbl+' '+v+t('trailsUnit')+'</div>':'';};
   var priceHtml='';
   if(inf){
-    var twd=state.rate?('約 NT$'+Math.round(inf.price_1day_adult*state.rate).toLocaleString()):'';
-    priceHtml='<div class="sec"><h3>票價・營業</h3><div class="pricebox">'+
-      '<div class="yen">¥'+inf.price_1day_adult.toLocaleString()+' <span style="font-size:12px;color:var(--muted)">/ 大人1日券</span></div>'+
-      '<div class="twd">'+twd+(inf.price_1day_2025?'　（去季 ¥'+inf.price_1day_2025.toLocaleString()+'）':'')+'</div>'+
+    var twd=state.rate?(t('approxTwd')+Math.round(inf.price_1day_adult*state.rate).toLocaleString()):'';
+    priceHtml='<div class="sec"><h3>'+t('secPrice')+'</h3><div class="pricebox">'+
+      '<div class="yen">¥'+inf.price_1day_adult.toLocaleString()+' <span style="font-size:12px;color:var(--muted)">'+t('adult1day')+'</span></div>'+
+      '<div class="twd">'+twd+(inf.price_1day_2025?'　（'+t('lastSeason')+' ¥'+inf.price_1day_2025.toLocaleString()+'）':'')+'</div>'+
       (inf.hours?'<div class="twd">🕗 '+inf.hours+'</div>':'')+
       (inf.season?'<div class="twd">📅 '+inf.season+'</div>':'')+
       (inf.extra_note?'<div class="twd">ℹ️ '+inf.extra_note+'</div>':'')+
-      '<div class="note">'+inf.price_note+'<br>來源：'+inf.source+'（查核 '+inf.last_checked+'）· 以官網為準</div>'+
+      '<div class="note">'+inf.price_note+'<br>'+fmt(t('srcLine'),{s:inf.source,d:inf.last_checked})+'</div>'+
       '</div></div>';
   } else {
-    priceHtml='<div class="sec"><h3>票價・營業</h3><div class="wx">此雪場尚無彙整票價，請點下方官網查詢。</div></div>';
+    priceHtml='<div class="sec"><h3>'+t('secPrice')+'</h3><div class="wx">'+t('noPrice')+'</div></div>';
   }
   var inWish=wish.indexOf(a.id)>=0, inCmp=cmp.indexOf(a.id)>=0;
   var el=document.getElementById('detail');
   el.innerHTML=
     '<button class="x" onclick="closeDetail()">×</button>'+
     '<h2>'+jname(a)+'</h2>'+
-    '<div><span class="rg" style="background:'+rc(a.region)+';font-size:11px;padding:2px 9px">'+a.region+'・'+a.pref+'</span>'+(a.night?' <span class="badge">🌙 夜滑</span>':'')+'</div>'+
+    '<div><span class="rg" style="background:'+rc(a.region)+';font-size:11px;padding:2px 9px">'+regionName(a.region)+'・'+prefName(a.pref)+'</span>'+(a.night?' <span class="badge">🌙 '+t('badgeNight')+'</span>':'')+'</div>'+
     '<dl class="kv">'+
-      (a.elevTop!=null?'<dt>山頂標高</dt><dd>'+a.elevTop+' m</dd>':'')+
-      (a.elevBase!=null?'<dt>山麓標高</dt><dd>'+a.elevBase+' m</dd>':'')+
-      (a.vert!=null?'<dt>標高落差</dt><dd>'+a.vert+' m</dd>':'')+
-      (a.runKm!=null?'<dt>総滑走距離</dt><dd>'+a.runKm+' km</dd>':'')+
-      (a.lifts?'<dt>纜車數</dt><dd>'+a.lifts+' 基</dd>':'')+
-      (t.total?'<dt>雪道總數</dt><dd>'+t.total+' 條</dd>':'')+
+      (a.elevTop!=null?'<dt>'+t('kvTop')+'</dt><dd>'+a.elevTop+' m</dd>':'')+
+      (a.elevBase!=null?'<dt>'+t('kvBase')+'</dt><dd>'+a.elevBase+' m</dd>':'')+
+      (a.vert!=null?'<dt>'+t('kvVert')+'</dt><dd>'+a.vert+' m</dd>':'')+
+      (a.runKm!=null?'<dt>'+t('kvRun')+'</dt><dd>'+a.runKm+' km</dd>':'')+
+      (a.lifts?'<dt>'+t('kvLifts')+'</dt><dd>'+a.lifts+t('liftsUnit')+'</dd>':'')+
+      (t2.total?'<dt>'+t('kvTrails')+'</dt><dd>'+t2.total+t('trailsUnit')+'</dd>':'')+
     '</dl>'+
-    (t.total?'<div class="sec"><h3>雪道難度分布</h3>'+
-      seg(t.green,'green','初級')+seg(t.red,'red','中級')+seg(t.black,'black','上級')+seg(t.other,'orange','非壓雪／其他')+'</div>':'')+
+    (t2.total?'<div class="sec"><h3>'+t('secDiff')+'</h3>'+
+      seg(t2.green,'green',t('diffGreen'))+seg(t2.red,'red',t('diffRed'))+seg(t2.black,'black',t('diffBlack'))+seg(t2.other,'orange',t('diffOther'))+'</div>':'')+
     priceHtml+
-    '<div class="sec"><h3>即時天氣（Open-Meteo）</h3><div class="wx" id="wxBox">查詢中…</div></div>'+
+    '<div class="sec"><h3>'+t('secWx')+'</h3><div class="wx" id="wxBox">'+t('wxLoading')+'</div></div>'+
     '<div class="btns">'+
-      (a.hasRuns?'<button class="primary" onclick="showRuns(\''+a.id+'\')">🗺️ 顯示雪道線</button>':'')+
-      (a.web?'<a href="'+a.web+'" target="_blank" rel="noopener">🔗 官方網站</a>':'')+
+      (a.hasRuns?'<button class="primary" onclick="showRuns(\''+a.id+'\')">'+t('btnRuns')+'</button>':'')+
+      (a.web?'<a href="'+a.web+'" target="_blank" rel="noopener">'+t('btnWeb')+'</a>':'')+
     '</div>'+
     '<div class="btns">'+
-      '<button onclick="toggleWish(\''+a.id+'\')">'+(inWish?'★ 已在願望':'☆ 加入願望')+'</button>'+
-      '<button onclick="toggleCmp(\''+a.id+'\')">'+(inCmp?'✓ 已在比較':'＋ 加入比較')+'</button>'+
-      '<a href="https://www.google.com/maps/search/?api=1&query='+a.lat+','+a.lng+'" target="_blank" rel="noopener">📍 導航</a>'+
+      '<button onclick="toggleWish(\''+a.id+'\')">'+(inWish?t('wishIn'):t('wishAdd'))+'</button>'+
+      '<button onclick="toggleCmp(\''+a.id+'\')">'+(inCmp?t('cmpIn'):t('cmpAdd'))+'</button>'+
+      '<a href="https://www.google.com/maps/search/?api=1&query='+a.lat+','+a.lng+'" target="_blank" rel="noopener">'+t('btnNav')+'</a>'+
     '</div>';
   el.classList.add('open');
   loadWeather(a);
@@ -430,11 +623,11 @@ function loadWeather(a){
     if(!box||curDetail!==a)return;
     var c=d.current||{};
     var snow3=(d.daily&&d.daily.snowfall_sum)?d.daily.snowfall_sum.reduce(function(s,x){return s+(x||0);},0):null;
-    box.innerHTML='<span class="big">'+(c.temperature_2m!=null?c.temperature_2m+'°C':'—')+'</span> 山麓氣溫'+
-      (c.snowfall!=null?'　❄️ 現時降雪 '+c.snowfall+' cm':'')+
-      (snow3!=null?'<br>未來3日累計降雪約 '+snow3.toFixed(1)+' cm':'')+
-      '<br><span style="font-size:10px">※ 座標點天氣，僅供參考</span>';
-  }).catch(function(){if(box&&curDetail===a)box.innerHTML='<span style="font-size:11px">（天氣查詢失敗，需連網）</span>';});
+    box.innerHTML='<span class="big">'+(c.temperature_2m!=null?c.temperature_2m+'°C':'—')+'</span> '+t('wxTemp')+
+      (c.snowfall!=null?'　'+fmt(t('wxSnowNow'),{v:c.snowfall}):'')+
+      (snow3!=null?'<br>'+fmt(t('wxSnow3d'),{v:snow3.toFixed(1)}):'')+
+      '<br><span style="font-size:10px">'+t('wxNote')+'</span>';
+  }).catch(function(){if(box&&curDetail===a)box.innerHTML='<span style="font-size:11px">'+t('wxFail')+'</span>';});
 }
 
 /* 願望清單 */
@@ -443,43 +636,43 @@ function toggleWish(id){var i=wish.indexOf(id);if(i>=0)wish.splice(i,1);else wis
 function updWishN(){document.getElementById('wishN').textContent=wish.length;}
 function openWish(){
   var b=document.getElementById('wishBody');
-  if(!wish.length){b.innerHTML='<div class="empty">尚未加入任何雪場。<br>點雪場詳情的「☆ 加入願望」即可收藏。</div>';}
+  if(!wish.length){b.innerHTML='<div class="empty">'+t('wishEmpty')+'</div>';}
   else{b.innerHTML=wishTable();}
   document.getElementById('wishModal').classList.add('open');
 }
 function wishTable(){
   var rows=wish.map(function(id){var a=BYID[id];if(!a)return '';var inf=info(a);
-    return '<tr><td><b>'+jname(a)+'</b><br><small style="color:var(--muted)">'+a.region+'・'+a.pref+'</small></td>'+
+    return '<tr><td><b>'+jname(a)+'</b><br><small style="color:var(--muted)">'+regionName(a.region)+'・'+prefName(a.pref)+'</small></td>'+
       '<td class="num">'+(a.vert!=null?a.vert+'m':'—')+'</td>'+
       '<td class="num">'+(a.runKm!=null?a.runKm+'km':'—')+'</td>'+
       '<td class="num">'+(inf?'¥'+inf.price_1day_adult.toLocaleString():'—')+'</td>'+
-      '<td><span class="cmp-rm" onclick="rmWish(\''+id+'\')">移除</span></td></tr>';}).join('');
-  return '<table><thead><tr><th>雪場</th><th class="num">落差</th><th class="num">滑走</th><th class="num">1日券</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+      '<td><span class="cmp-rm" onclick="rmWish(\''+id+'\')">'+t('remove')+'</span></td></tr>';}).join('');
+  return '<table><thead><tr><th>'+t('thResort')+'</th><th class="num">'+t('thVert')+'</th><th class="num">'+t('thRun')+'</th><th class="num">'+t('thPrice')+'</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
 function rmWish(id){var i=wish.indexOf(id);if(i>=0)wish.splice(i,1);localStorage.setItem('japanpowder_wishlist',JSON.stringify(wish));updWishN();openWish();}
 
 /* 比較器 */
-function toggleCmp(id){var i=cmp.indexOf(id);if(i>=0)cmp.splice(i,1);else{if(cmp.length>=4){alert('最多比較 4 座雪場');return;}cmp.push(id);}
+function toggleCmp(id){var i=cmp.indexOf(id);if(i>=0)cmp.splice(i,1);else{if(cmp.length>=4){alert(t('cmpMax'));return;}cmp.push(id);}
   document.getElementById('cmpN').textContent=cmp.length;if(curDetail)openDetail(curDetail);}
 function openCmp(){
   var b=document.getElementById('cmpBody');
-  if(!cmp.length){b.innerHTML='<div class="empty">尚未選擇比較對象。<br>點雪場詳情的「＋ 加入比較」（最多 4 座）。</div>';}
+  if(!cmp.length){b.innerHTML='<div class="empty">'+t('cmpEmpty')+'</div>';}
   else{
     var rows=[
-      ['地區',function(a){return a.region+'・'+a.pref;}],
-      ['山頂標高',function(a){return a.elevTop!=null?a.elevTop+' m':'—';}],
-      ['標高落差',function(a){return a.vert!=null?a.vert+' m':'—';}],
-      ['総滑走距離',function(a){return a.runKm!=null?a.runKm+' km':'—';}],
-      ['纜車數',function(a){return a.lifts?a.lifts+' 基':'—';}],
-      ['雪道總數',function(a){return tiers(a).total||'—';}],
-      ['初級/中級/上級',function(a){var t=tiers(a);return t.green+' / '+t.red+' / '+t.black;}],
-      ['夜滑',function(a){return a.night?'○':'—';}],
-      ['1日券',function(a){var inf=info(a);return inf?'¥'+inf.price_1day_adult.toLocaleString():'—';}],
-      ['≈台幣',function(a){var inf=info(a);return inf&&state.rate?'NT$'+Math.round(inf.price_1day_adult*state.rate).toLocaleString():'—';}],
-      ['營業時間',function(a){var inf=info(a);return inf&&inf.hours?inf.hours:'—';}],
-      ['雪季',function(a){var inf=info(a);return inf&&inf.season?inf.season:'—';}],
+      [t('rowRegion'),function(a){return regionName(a.region)+'・'+prefName(a.pref);}],
+      [t('kvTop'),function(a){return a.elevTop!=null?a.elevTop+' m':'—';}],
+      [t('kvVert'),function(a){return a.vert!=null?a.vert+' m':'—';}],
+      [t('kvRun'),function(a){return a.runKm!=null?a.runKm+' km':'—';}],
+      [t('kvLifts'),function(a){return a.lifts?a.lifts+t('liftsUnit'):'—';}],
+      [t('kvTrails'),function(a){return tiers(a).total||'—';}],
+      [t('diffGreen')+'/'+t('diffRed')+'/'+t('diffBlack'),function(a){var x=tiers(a);return x.green+' / '+x.red+' / '+x.black;}],
+      [t('rowNight'),function(a){return a.night?'○':'—';}],
+      [t('thPrice'),function(a){var inf=info(a);return inf?'¥'+inf.price_1day_adult.toLocaleString():'—';}],
+      [t('rowTwd'),function(a){var inf=info(a);return inf&&state.rate?'NT$'+Math.round(inf.price_1day_adult*state.rate).toLocaleString():'—';}],
+      [t('rowHours'),function(a){var inf=info(a);return inf&&inf.hours?inf.hours:'—';}],
+      [t('rowSeason'),function(a){var inf=info(a);return inf&&inf.season?inf.season:'—';}],
     ];
-    var head='<tr><th>項目</th>'+cmp.map(function(id){return '<th>'+jname(BYID[id])+' <span class="cmp-rm" onclick="rmCmp(\''+id+'\')">×</span></th>';}).join('')+'</tr>';
+    var head='<tr><th>'+t('thItem')+'</th>'+cmp.map(function(id){return '<th>'+jname(BYID[id])+' <span class="cmp-rm" onclick="rmCmp(\''+id+'\')">×</span></th>';}).join('')+'</tr>';
     var body=rows.map(function(r){return '<tr><td style="color:var(--muted)">'+r[0]+'</td>'+cmp.map(function(id){return '<td>'+r[1](BYID[id])+'</td>';}).join('')+'</tr>';}).join('');
     b.innerHTML='<table><thead>'+head+'</thead><tbody>'+body+'</tbody></table>';
   }
@@ -488,15 +681,18 @@ function openCmp(){
 function rmCmp(id){var i=cmp.indexOf(id);if(i>=0)cmp.splice(i,1);document.getElementById('cmpN').textContent=cmp.length;openCmp();}
 
 /* 排行榜 */
-var RANKS=[
-  ['最長滑走距離','runKm',function(a){return a.runKm!=null;},function(a){return a.runKm+' km';}],
-  ['最大標高落差','vert',function(a){return a.vert!=null;},function(a){return a.vert+' m';}],
-  ['最多纜車','lifts',function(a){return a.lifts;},function(a){return a.lifts+' 基';}],
-  ['票價最高','_pHigh',function(a){return info(a);},function(a){return '¥'+info(a).price_1day_adult.toLocaleString();}],
-  ['票價最低(CP)','_pLow',function(a){return info(a);},function(a){return '¥'+info(a).price_1day_adult.toLocaleString();}],
-];
+function rankDefs(){
+  return [
+    [t('rankRun'),'runKm',function(a){return a.runKm!=null;},function(a){return a.runKm+' km';}],
+    [t('rankVert'),'vert',function(a){return a.vert!=null;},function(a){return a.vert+' m';}],
+    [t('rankLifts'),'lifts',function(a){return a.lifts;},function(a){return a.lifts+t('liftsUnit');}],
+    [t('rankPHigh'),'_pHigh',function(a){return info(a);},function(a){return '¥'+info(a).price_1day_adult.toLocaleString();}],
+    [t('rankPLow'),'_pLow',function(a){return info(a);},function(a){return '¥'+info(a).price_1day_adult.toLocaleString();}],
+  ];
+}
 var rankIdx=0;
 function renderRank(list){
+  var RANKS=rankDefs();
   var tabs=document.getElementById('rankTabs');tabs.innerHTML='';
   RANKS.forEach(function(r,i){var b=document.createElement('button');b.textContent=r[0];b.className=i===rankIdx?'on':'';
     b.onclick=function(){rankIdx=i;render();};tabs.appendChild(b);});
@@ -507,13 +703,13 @@ function renderRank(list){
     if(r[1]==='_pLow')return info(a).price_1day_adult-info(b).price_1day_adult;
     return (b[r[1]]||0)-(a[r[1]]||0);
   });
-  document.getElementById('count').textContent='全國排行 · '+r[0];
+  document.getElementById('count').textContent=t('rankTitle')+r[0];
   var rows=arr.slice(0,20).map(function(a,i){
     var rankCell=i<3?['🥇','🥈','🥉'][i]:(i+1);
     return '<tr onclick="openDetail(BYID[\''+a.id+'\'])"><td class="num">'+rankCell+'</td>'+
-      '<td><b>'+jname(a)+'</b> <span class="rg" style="background:'+rc(a.region)+';font-size:10px">'+a.region+'</span></td>'+
+      '<td><b>'+jname(a)+'</b> <span class="rg" style="background:'+rc(a.region)+';font-size:10px">'+regionName(a.region)+'</span></td>'+
       '<td class="num" style="font-weight:800;color:var(--accent2)">'+r[3](a)+'</td></tr>';}).join('');
-  list.innerHTML='<table><thead><tr><th class="num">#</th><th>雪場</th><th class="num">'+r[0]+'</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  list.innerHTML='<table><thead><tr><th class="num">#</th><th>'+t('thResort')+'</th><th class="num">'+r[0]+'</th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
 
 function fitRegion(r){
