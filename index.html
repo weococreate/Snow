@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日本雪季地圖｜WEOCO Snow</title>
+<style>
+  :root{
+    --bg:#f5f7f9; --card:#ffffff; --ink:#1e2833; --sub:#647380; --line:#e4e9ed;
+    --teal:#2a9d8f; --teal-d:#1f7a70; --blue:#3b6fb0; --amber:#e2963a;
+    --shadow:0 1px 3px rgba(20,40,60,.05),0 8px 22px rgba(20,40,60,.05);
+  }
+  @media(prefers-color-scheme:dark){
+    :root{--bg:#12171c;--card:#1b2229;--ink:#e6ecf1;--sub:#94a3af;--line:#2a333c;}
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 20px 70px}
+
+  header{text-align:center;padding:56px 0 20px}
+  header .badge{display:inline-block;font-size:12px;font-weight:600;letter-spacing:2px;color:var(--blue);background:rgba(59,111,176,.12);padding:5px 14px;border-radius:20px;margin-bottom:16px}
+  header h1{font-size:30px;font-weight:800;letter-spacing:1px}
+  header .sub{color:var(--sub);font-size:15px;margin-top:12px;max-width:600px;margin-left:auto;margin-right:auto}
+
+  .group-title{font-size:14px;font-weight:700;color:var(--sub);letter-spacing:1.5px;margin:38px 0 14px;display:flex;align-items:center;gap:8px}
+  .group-title::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+  .card{position:relative;display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 22px 20px;text-decoration:none;color:inherit;transition:border-color .16s,transform .16s,box-shadow .16s;overflow:hidden}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent,var(--blue))}
+  .card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--accent,var(--blue))}
+  .card .top{display:flex;align-items:flex-start;gap:12px}
+  .card .icon{font-size:30px;line-height:1}
+  .card .name{font-size:17px;font-weight:750;margin-bottom:2px}
+  .card .en{font-size:11px;color:var(--sub);letter-spacing:.5px;font-weight:600}
+  .card .desc{font-size:13px;color:var(--sub);margin:12px 0 14px;flex:1}
+  .card .stat{display:flex;align-items:baseline;gap:7px;margin-bottom:14px}
+  .card .stat .n{font-size:20px;font-weight:800;color:var(--accent,var(--blue))}
+  .card .stat .l{font-size:12px;color:var(--sub)}
+  .card .go{font-size:13px;color:var(--accent,var(--blue));font-weight:700}
+
+  footer{margin-top:44px;padding-top:22px;border-top:1px solid var(--line);font-size:12.5px;color:var(--sub);line-height:1.9}
+  footer .help{background:rgba(59,111,176,.08);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:16px;color:var(--ink)}
+  footer .help a{color:var(--blue);font-weight:700;text-decoration:none}
+  footer .help a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="badge">WEOCO · SNOW</div>
+    <h1>日本雪季地圖</h1>
+    <p class="sub">滑雪場與雪季相關的互動地圖，資料整理自公開來源。點卡片進入。</p>
+  </header>
+
+  <div class="group-title">🗺️ 地圖</div>
+  <div class="grid">
+    <a class="card" href="JapanPowder.html" style="--accent:#3b6fb0">
+      <div class="top"><span class="icon">🎿</span><span><span class="name">日本雪場地圖</span><br><span class="en">JapanPowder</span></span></div>
+      <div class="desc">日本全國 500 座滑雪場互動地圖（OpenSkiMap）：雪道難度綠／紅／黑三色、纜車與雪道統計、57 座主要雪場票價與雪季營業資訊、即時天氣；含雪場比較器、願望清單與排行榜。</div>
+      <div class="stat"><span class="n">500</span><span class="l">滑雪場 · 難度票價</span></div>
+      <div class="go">進入 →</div>
+    </a>
+  </div>
+
+  <footer>
+    <div class="help">♨️ 找 <b>日本溫泉地圖</b>？在全球主題站 → <a href="https://weococreate.github.io/Global/JapanOnsen.html">weococreate.github.io/Global/JapanOnsen.html</a></div>
+    以上地圖資料整理自公開來源（OpenSkiMap／OpenStreetMap 等），票價與營業資訊僅供參考，實際請以各雪場官方公告為準。
+  </footer>
+</div>
+</body>
+</html>
